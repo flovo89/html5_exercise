@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chat - Login</title>
+
+    <style>
+        /* https://color.adobe.com 
+            #44567F -> header
+            #D5E1FF -> site background
+            #88ACFF -> box background
+            #6A717F -> hover
+            #6D8ACC -> submit
+        */
+
+        html {
+            font-family: sans-serif;
+            line-height: 1.15;
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background-color: rgb(210, 212, 216);
+            height: 100%;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgb(175, 177, 180);
+            height: 120px;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+
+        header h1 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-top: 2rem;
+            font-size: 3rem;
+            float: left;
+        }
+
+        main {
+            height: 100%;
+        }
+
+        @keyframes movedown {
+            from {
+                top: 0%;
+            }
+
+            to {
+                top: 32%;
+            }
+        }
+
+        #loginbox {
+            background-color: rgb(131, 168, 175);
+            padding: 20px;
+            width: 260px;
+            position: relative;
+            top: 32%;
+            left: 50%;
+            margin-left: -150px;
+            animation: movedown 1.5s;
+        }
+
+        @keyframes fadein {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        main {
+            animation: fadein 2s;
+        }
+
+        #loginbox label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        #loginbox form>div:last-of-type {
+            padding-top: 1.5rem;
+            text-align: right;
+        }
+
+        #loginbox input[type=text] {
+            width: 100%;
+        }
+
+        input[type=submit] {
+            background-color: rgb(109, 204, 125);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Chat</h1>
+    </header>
+
+    <main>
+        <div id="loginbox">
+            <form id="formElement" method="GET" action="chat.html">
+                <div>
+                    <label for="nickname">Nickname</label>
+                    <input id="nickname" name="nickname" type="text" value="" autofocus="autofocus" required="required"
+                        autocomplete="off" pattern="^.{3,}$" data-errormsg="Bitte wähle einen Namen mit mindestens 3 Charactern">
+                </div>
+                <div>
+                    <input id="submitButton" type="submit" value="Login">
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        /***********************************************************
+        *   Validation
+        ***********************************************************/
+        let inputElement = document.getElementById("nickname");
+        inputElement.addEventListener("invalid", function(e) {
+            this.setCustomValidity(this.getAttribute("data-errormsg"));
+        });
+        inputElement.addEventListener("keyup", function(e) {
+            this.setCustomValidity("");
+            this.checkValidity();
+        });    
+
+        /***********************************************************
+        *   Storage
+        ***********************************************************/
+        const nickNameStorageItem = localStorage.getItem("nickname");
+        const userid = localStorage.getItem("userid");
+        if(nickNameStorageItem === null) {
+            console.log("No stored nickname in localstorage");
+        } else {
+            inputElement.value = nickNameStorageItem;
+        }
+
+        /***********************************************************
+        *   Login Users
+        ***********************************************************/
+        const form = document.getElementById("formElement"); 
+        form.onsubmit = function() {
+            return false;  
+        } 
+
+        const userFunction = async function()
+        {
+            try { 
+                const u = await fetch('https://chat.humbapa.ch/api/Users');
+                if(u.status === 200) {
+                    const ret = await u.json();
+                    console.log(ret);
+                    return ret;
+                }
+                console.log("Invalid status: " + u.status);
+            } catch(error) {
+                console.log("Could not fetch: " + error);
+            }
+        }
+
+        async function updateNickName()
+        {
+            if(!form.checkValidity()) {
+                return;
+            }
+            let existing = false;
+            const users = await userFunction();
+            const nickNameElement = document.getElementById("nickname");
+            const ownNickName = nickNameElement.value;
+            for (let i = 0, ii = users.length; i < ii; i++) {
+                if(userid !== null) {
+                    if(users[i].id === userid) {
+                        existing = true;
+                        break;
+                    }
+                }
+            }
+            if(existing) {
+                fetch('https://chat.humbapa.ch/api/Users',
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: userid,
+                        nickname: ownNickName,
+                        status: "online"
+                    })
+                }).then(response => {
+                    if(response.status === 200) {
+                        localStorage.setItem("nickname", ownNickName);
+                        form.submit();
+                    } else {
+                        console.log("Error: " + response.status);
+                    }
+                }).catch(error => {
+                    console.error(error)
+                });;
+            }
+            else {
+                fetch('https://chat.humbapa.ch/api/Users',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: ownNickName,
+                        status: "online"
+                    })
+                }).then(response => {return response.json();
+                    if (response.status === 200) {
+                        return response.json()
+                    } else {
+                        return Promise.reject('Unable to get users')
+                    }
+                }).then(json => {
+                    localStorage.setItem("userid", json.id);
+                    localStorage.setItem("nickname", ownNickName);
+                    form.submit();
+                }).catch(error => {
+                    console.error(error)
+                });
+            }
+        }
+        const submitElement = document.getElementById("submitButton");
+        submitElement.addEventListener("click", () => updateNickName());
+
+    </script>
+
+</body>
+
+</html>

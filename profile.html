@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chat - Profile</title>
+
+    <style>
+        /* https://color.adobe.com 
+                #44567F -> header
+                #D5E1FF -> site background
+                #88ACFF -> box background
+                #6A717F -> footer
+                #6D8ACC -> submit
+            */
+
+        html {
+            font-family: sans-serif;
+            line-height: 1.15;
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background-color: #D5E1FF;
+            min-height: 100%;
+            font: bold 120px;
+        }
+
+        header {
+            background-color: #44567F;
+            height: 120px;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+
+        header h1 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-top: 2rem;
+            font-size: 3rem;
+            float: left;
+        }
+
+        header nav {
+            font-size: 1.5rem;
+            font-weight: bold;
+            float: right;
+            padding-top: 24px;
+        }
+
+        header nav li {
+            display: inline;
+        }
+
+        header nav a {
+            color: #6A717F;
+        }
+
+        header nav a:hover {
+            color: #000;
+        }
+
+        header nav li:not(:first-child)::before {
+            content: " | "
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        form ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        @media screen and (max-width: 600px) {
+            label {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Chat</h1>
+        <nav>
+            <ul>
+                <li>
+                    <a href="chat.html">Chat</a>
+                </li>
+                <li>
+                    <a href="about.html">About</a>
+                </li>
+                <li>
+                    <a href="profile.html">Profile</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <article>
+            <form method="GET" action="profile.html">
+                <fieldset>
+                    <legend>Personal details</legend>
+                    <p>
+                        <label for="firstname">First name</label>
+                        <input type="text" name="firstname" id="firstname" value="">
+                    </p>
+                    <p>
+                        <label for="lastname">Last name</label>
+                        <input type="text" name="lastname" id="lastname" value="">
+                    </p>
+                    <p>
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" value="" required="required">
+                    </p>
+                    <p>
+                        <label for="zipcode">ZIP Code</label>
+                        <input type="number" name="zipcode" id="zipcode" value="">
+                    </p>
+                    <p>
+                        <label for="city">City</label>
+                        <input type="text" name="city" id="city" value="">
+                    </p>
+                    <p>
+                        <label for="country">Country</label>
+                        <input type="text" id="country" name="country" list="countrylist" required="required">
+                        <datalist id="countrylist">
+                            <option>Switzerland</option>
+                            <option>Germany</option>
+                        </datalist>
+                    </p>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Profile</legend>
+                    <p>
+                        <label for="nickname">Nickname</label>
+                        <input type="text" value="" id="nickname" readonly="readonly">
+                    </p>
+                    <p>
+                        Profile picture
+                    </p>
+                    <ul id="profilepicture">
+                        <li>
+                            <label for="profilepicture1">
+                                <img src="images/avatar_icon_1.svg" height="64" width="64" alt="Avatar 1">
+                            </label>
+                            <input type="radio" name="profilepicture" id="profilepicture1" value="1" required="required">
+                        </li>
+                        <li>
+                            <label for="profilepicture2">
+                                <img src="images/avatar_icon_2.svg" height="64" width="64" alt="Avatar 2">
+                            </label>
+                            <input type="radio" name="profilepicture" id="profilepicture2" value="2">
+                        </li>
+                        <li>
+                            <label for="profilepicture3">
+                                <img src="images/avatar_icon_3.svg" height="64" width="64" alt="Avatar 3">
+                            </label>
+                            <input type="radio" name="profilepicture" id="profilepicture3" value="3">
+                        </li>
+                        <li>
+                            <label for="profilepicture4">
+                                <img src="images/avatar_icon_4.svg" height="64" width="64" alt="Avatar 4">
+                            </label>
+                            <input type="radio" name="profilepicture" id="profilepicture4" value="4">
+                        </li>
+                    </ul>
+                    <p>
+                        <label for="profiledescription">Description</label>
+                        <textarea name="profiledescription" id="profiledescription"></textarea>
+                    </p>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Preferences</legend>
+                    <p>
+                        Background image
+                    </p>
+                    <ul id="backgroundimage">
+                        <li>
+                            <label for="backgroundimage1">
+                                <img srcset="images/background_1_320.jpg 320w, images/background_1_640.jpg 640w, images/background_1_1280.jpg 1280w"
+                                    sizes="(max-width: 800px) 300px, (min-width: 1400px) 1000px, 600px"
+                                    src="images/background_1_640.jpg" alt="Background 1">
+                                <input type="radio" name="backgroundimage" value="1" id="backgroundimage1">
+                            </label>
+                        </li>
+                        <li>
+                            <label for="backgroundimage2">
+                                <img srcset="images/background_2_320.jpg 320w, images/background_2_640.jpg 640w, images/background_2_1280.jpg 1280w"
+                                    sizes="(max-width: 800px) 300px, (min-width: 1400px) 1000px, 600px"
+                                    src="images/background_2_640.jpg" alt="Background 2">
+                                <input type="radio" name="backgroundimage" value="2" id="backgroundimage2">
+                            </label>
+                        </li>
+                        <li>
+                            <label for="backgroundimage3">
+                                <img srcset="images/background_3_320.jpg 320w, images/background_3_640.jpg 640w, images/background_3_1280.jpg 1280w"
+                                    sizes="(max-width: 800px) 300px, (min-width: 1400px) 1000px, 600px"
+                                    src="images/background_3_640.jpg" alt="Background 3">
+                                <input type="radio" name="backgroundimage" value="3" id="backgroundimage3">
+                            </label>
+                        </li>
+                        <li>
+                            <label for="backgroundimage4">
+                                <img srcset="images/background_4_320.jpg 320w, images/background_4_640.jpg 640w, images/background_4_1280.jpg 1280w"
+                                    sizes="(max-width: 800px) 300px, (min-width: 1400px) 1000px, 600px"
+                                    src="images/background_4_640.jpg" alt="Background 4">
+                                <input type="radio" name="backgroundimage" value="4" id="backgroundimage4">
+                            </label>
+                        </li>
+                    </ul>
+                </fieldset>
+
+                <fieldset>
+                    <input id="submitButton" type="submit" value="Save">
+                </fieldset>
+            </form>
+        </article>
+    </main>
+
+    <script>
+
+        /***********************************************************
+        *   Storage
+        ***********************************************************/
+        let profilepictureCurrent = "";
+        const profileItems = document.querySelectorAll("#profilepicture li");     
+        for(let i = 0; i < profileItems.length; i++) {
+            profileItems[i].onclick = function(){                
+                profilepictureCurrent = document.getElementById('profilepicture'+(i+1)).value;    
+            };
+        }
+        let backgroundCurrent = "";
+        const backgroundItems = document.querySelectorAll("#backgroundimage li");     
+        for(let i = 0; i < backgroundItems.length; i++) {
+            backgroundItems[i].onclick = function(){                
+                backgroundCurrent = document.getElementById('backgroundimage'+(i+1)).value;    
+            };
+        }
+
+        function storeEntries() {
+            localStorage.setItem('firstname', document.getElementById('firstname').value);
+            localStorage.setItem('lastname', document.getElementById('lastname').value);
+            localStorage.setItem('email', document.getElementById('email').value);
+            localStorage.setItem('zipcode', document.getElementById('zipcode').value);
+            localStorage.setItem('city', document.getElementById('city').value);
+            localStorage.setItem('country', document.getElementById('country').value);
+            localStorage.setItem('profilepicture', profilepictureCurrent);
+            localStorage.setItem('profiledescription', document.getElementById('profiledescription').value);
+            localStorage.setItem('backgroundimage', backgroundCurrent);
+        }
+
+        function restoreEntries() {
+            let firstname = localStorage.getItem('firstname');
+            let lastname = localStorage.getItem('lastname');
+            let email = localStorage.getItem('email');
+            let zipcode = localStorage.getItem('zipcode');
+            let city = localStorage.getItem('city');
+            let countrylist = localStorage.getItem('country');
+            let profilepicture = localStorage.getItem('profilepicture');
+            let profiledescription = localStorage.getItem('profiledescription');
+            let backgroundimage = localStorage.getItem('backgroundimage');
+
+            document.getElementById('firstname').value = firstname;
+            document.getElementById('lastname').value = lastname;
+            document.getElementById('email').value = email;
+            document.getElementById('zipcode').value = zipcode;
+            document.getElementById('city').value = city;
+            document.getElementById('country').value = countrylist;
+
+            const profilePicItems = document.querySelectorAll("#profilepicture li");     
+            for(let i = 0; i < profilePicItems.length; i++) {
+                if(document.getElementById('profilepicture'+(i+1)).value === profilepicture) {
+                    document.getElementById('profilepicture'+(i+1)).checked = "true";
+                } else {
+                    document.getElementById('profilepicture'+(i+1)).checked = "";
+                }
+            }
+
+            document.getElementById('profiledescription').value = profiledescription;
+
+            const backgroundItems = document.querySelectorAll("#backgroundimage li");     
+            for(let i = 0; i < backgroundItems.length; i++) {
+                if(document.getElementById('backgroundimage'+(i+1)).value === backgroundimage) {
+                    document.getElementById('backgroundimage'+(i+1)).checked = "true";
+                } else {
+                    document.getElementById('backgroundimage'+(i+1)).checked = "";
+                }
+            }
+
+        }
+        restoreEntries();
+        
+        const submitElement = document.getElementById("submitButton");
+        submitElement.addEventListener("click", storeEntries);
+
+    </script>
+</body>
+
+</html>

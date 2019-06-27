@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chat</title>
+
+    <style>
+        /* https://color.adobe.com 
+            #44567F -> header
+            #D5E1FF -> site background
+            #88ACFF -> box background
+            #6A717F -> footer
+            #6D8ACC -> submit
+        */
+
+        html {
+            font-family: sans-serif;
+            line-height: 1.15;
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background-color: #D5E1FF;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: scroll;
+        }
+
+        header {
+            background-color: #44567F;
+            flex-basis: 120px;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+
+        header h1 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-top: 2rem;
+            font-size: 3rem;
+            float: left;
+        }
+
+        header nav {
+            font-size: 1.5rem;
+            font-weight: bold;
+            float: right;
+            padding-top: 24px;
+        }
+
+        header nav li {
+            display: inline;
+        }
+
+        header nav a {
+            color: #6A717F;
+        }
+
+        header nav a:hover {
+            color: #000;
+        }
+
+        header nav li:not(:first-child)::before {
+            content: " | "
+        }
+
+        main {
+            margin: 0;
+            display: flex;
+            flex-direction: row;
+            flex-grow: 1;
+        }
+
+        article {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        article h2 {
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        article h3 {
+            font-size: 1.1rem;
+        }
+
+        #messages {
+            overflow-y: scroll;
+            flex-grow: 1;
+            padding-left: 1rem;
+            height: 200px;
+        }
+
+        #messages span.username {
+            float: left;
+            clear: left;
+            margin-top: 0.2rem;
+            margin-right: 0.6rem;
+        }
+
+        #messages span.username::before {
+            content: "> ";
+        }
+
+        #messages span.datetime {
+            float: left;
+            clear: left;
+            font-size: 0.8rem;
+            margin-top: 1.0rem;
+            font-size: x-small;
+            color: darkblue;
+        }
+
+        #messages>section>p {
+            white-space: pre-wrap;
+        }
+
+        #users {
+            overflow-y: scroll;
+            list-style: none;
+            height: 500px;
+        }
+
+        .userstatus_offline {
+            color: black;
+            font-style: italic;
+        }
+
+        .userstatus_online {
+            color: darkgreen;
+            font-weight: bold;
+        }
+
+        .userstatus_away {
+            color: darkorange;
+            font-weight: bold;
+        }
+
+        article form {
+            flex-basis: 3rem;
+        }
+
+        article form>textarea {
+            float: left;
+            height: 3rem;
+            width: calc(100% - 66px);
+        }
+
+        article form>input {
+            float: right;
+            height: calc(3rem + 6px);
+            width: 60px;
+        }
+
+        aside {
+            flex-basis: 300px;
+            background-color: #88ACFF;
+        }
+
+        footer {
+            background-color: #6A717F;
+            flex-basis: 30px;
+        }
+
+        footer>p {
+            margin: 0.5rem;
+        }
+
+        .nexttoeachother {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Chat</h1>
+        <nav>
+            <ul>
+                <li>
+                    <a href="chat.html">Chat</a>
+                </li>
+                <li>
+                    <a href="about.html">About</a>
+                </li>
+                <li>
+                    <a href="profile.html">Profile</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <article>
+            <div id="messages">
+
+            </div>
+            <form method="GET" id="sendElement">
+                <textarea name="message" id="message" cols="80" rows="3"></textarea>
+                <input id="submitButton" type="submit" value="Send">
+            </form>
+        </article>
+
+        <aside>
+            <ul id="users" draggable="false">
+            </ul>
+        </aside>
+    </main>
+
+    <footer>
+        <p id="con_status">Connecting to server...</p>
+    </footer>
+
+    <script>
+
+        function connected(ok)
+        {
+            el = document.getElementById("con_status");
+            if(ok) {
+                el.innerText = "Connected";
+            } else {
+                el.innerText = "Connecting to server...";
+            }
+        }
+
+        /***********************************************************
+        *   User handling
+        ***********************************************************/
+        let userList = [];
+        function addToUserList(avatar, status, nickname, id)
+        {
+            userList.push({
+                a: avatar,
+                s: status,
+                n: nickname,
+                i: id
+            });
+        }
+
+        function removeUser(id)
+        {
+            let found = false;
+            for(let i = 0, ii = userList.length; i < ii; i++) {
+                if(userList[i].i === id) {
+                    userList.splice(i, 1);
+                    found = true;
+                }
+            }
+            if(found) {
+                const outputElement = document.getElementById("users");
+                let liChild = outputElement.children;
+                for(let i = 0, ii = liChild.length; i < ii; i++) {
+                    if(liChild[i].getAttribute("id") === id) {
+                        outputElement.removeChild(liChild[i]);
+                    }
+                }
+            }
+        }
+
+        function updateUser(avatar, status, nickname, id) 
+        {
+            let found = false;
+            for(let i = 0, ii = userList.length; i < ii; i++) {
+                if(userList[i].id === id) {
+                    removeUser(id);
+                    found = true;
+                }
+            }
+            if(found) {
+                addUser(avatar, status, nickname, id);
+                console.log("User added due to user_update")
+            }
+        }
+
+        function addUser(avatar, status, nickname, id) 
+        {
+            addToUserList(avatar, status, nickname, id)
+            const outputElement = document.getElementById("users");
+            let li = document.createElement("li");
+            let img = document.createElement("img");
+            img.setAttribute("src", `images/avatar_icon_${avatar}.svg`);
+            img.setAttribute("height", "20");
+            img.setAttribute("width", "20");
+            img.setAttribute("class", "nexttoeachother");
+            img.setAttribute("draggable", false);
+            let text = document.createElement("div");
+            text.setAttribute("class", "nexttoeachother userstatus_" + status);
+            text.setAttribute("draggable", false);
+            text.innerText = nickname;
+            li.appendChild(img);
+            li.appendChild(text);
+            li.setAttribute("id", id);
+            li.setAttribute("draggable", true);
+            li.addEventListener("dragstart", dragStartHandler);
+            li.addEventListener("dragover", dragOverHandler);
+            li.addEventListener("drop", dragDropHandler);
+            outputElement.appendChild(li);
+        }
+
+        function getUsers(update)
+        {
+            fetch('https://chat.humbapa.ch/api/Users')
+                .then(response => {
+                    if (response.status === 200) {
+                        return response.json();
+                   } else {
+                        return Promise.reject('Unable to get users');
+                    }
+                }).then(json => {
+                    if(update) {
+                        for (let i = 0, ii = json.length; i < ii; i++) {
+                            addUser(json[i].avatar, json[i].status, json[i].nickname, json[i].id);
+                        }
+                    }
+                    connected(true);
+                    console.log(json);
+                    return json;
+                }).catch(error => {
+                    connected(false);
+                    console.error(error);
+            });
+        }
+
+        getUsers(true);
+
+        /***********************************************************
+        *   Get Messages
+        ***********************************************************/
+        function addMessage(message, timestamp, userid)
+        {
+            let nickname = "??? unknown ???";
+            for (let i = 0, ii = userList.length; i < ii; i++) {
+                if(userList[i].i === userid) {
+                    nickname = userList[i].n;
+                }
+            }
+            const outputElement = document.getElementById("messages");
+            let sectionTop = document.createElement("section");
+            let pTop = document.createElement("p");
+            let spanDate = document.createElement("span");
+            let spanMessage = document.createElement("span");
+            spanDate.textContent = new Date(timestamp).toLocaleString("de-CH", { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: 'numeric', 
+                minute: 'numeric', 
+                second: 'numeric' 
+            });
+            spanDate.setAttribute("class", "datetime");
+            spanMessage.setAttribute("class", "username");
+            spanMessage.appendChild(document.createTextNode(nickname + " ==>  " + message));
+            pTop.appendChild(spanDate);
+            pTop.appendChild(spanMessage);
+            sectionTop.appendChild(pTop);
+            outputElement.appendChild(sectionTop);
+            outputElement.scrollTo(0, outputElement.scrollHeight);
+        }
+
+        function getMessages()
+        {
+            fetch('https://chat.humbapa.ch/api/Messages')
+                .then(response => {
+                    if (response.status === 200) {
+                        return response.json();
+                   } else {
+                        return Promise.reject('Unable to get messages');
+                    }
+                })
+                .then(json => {
+                    for (let i = json.length-1; i >= 0; i--) {
+                        addMessage(json[i].message, json[i].timestamp, json[i].user_id);
+                    }
+                    console.log(json);
+                }).catch(error => {
+                    console.error(error);
+            });
+        }
+
+        getMessages();
+
+        /***********************************************************
+        *   WebSockets 
+        ***********************************************************/
+        const ws = new WebSocket('wss://chat.humbapa.ch/ws')
+        ws.onerror = function(event) {
+            console.log('WebSocket Error:')
+            console.log(event)
+        }
+        ws.onmessage = function(event) {
+            console.log('Neue WebSocket Message');
+            const json = JSON.parse(event.data);
+            if(json.action === "message_added") {
+                console.log("message_added notification");
+                addMessage(json.data.message, json.data.timestamp, json.data.user_id);
+                notifyMessageAdded(json.data.user_id, json.data.message);
+            } else if(json.action === "user_added") {
+                console.log("user_added notification");
+                addUser(json.data.avatar, json.data.status, json.data.nickname, json.data.id);
+            } else if(json.action === "user_updated") {
+                console.log("user_updated notification");
+                updateUser(json.data.avatar, json.data.status, json.data.nickname, json.data.id);
+            } else if(json.action === "user_deleted") {
+                console.log("user_deleted notification");
+                removeUser(json.data.id);
+            } else {
+                console.log("unknown webevent received");
+                console.log(event);
+            }
+        }
+
+        /***********************************************************
+        *   Send message
+        ***********************************************************/
+        const sendForm = document.getElementById("sendElement"); 
+        sendForm.onsubmit = function() {
+            return false;  
+        } 
+        const submitElement = document.getElementById("submitButton");
+        const messageElement = document.getElementById("message");
+        submitElement.addEventListener("click", function(){
+            console.log("Send message: " + messageElement.value);
+            fetch('https://chat.humbapa.ch/api/Messages',
+            {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: localStorage.getItem("userid"),
+                    message: messageElement.value
+                })
+            });
+            messageElement.value = "";
+        });        
+
+        /***********************************************************
+        *   Drag & Drop
+        ***********************************************************/
+        function dragStartHandler(event)
+        {
+            const elementId = event.srcElement.getAttribute("id");
+            event.dataTransfer.setData("id", elementId);
+        }
+
+        function dragOverHandler(event)
+        {
+            event.preventDefault();
+        }
+
+        function dragDropHandler(event)
+        {
+            const fromId = event.dataTransfer.getData(event.dataTransfer.items[0].type);
+            const usersElement = document.getElementById("users");
+            let liChild = usersElement.children;
+            let toMove = {};
+            for(let i = 0, ii = liChild.length; i < ii; i++) {
+                if(liChild[i].getAttribute("id") === fromId) {
+                    toMove = liChild[i];
+                    break;
+                }
+            }
+            usersElement.removeChild(toMove);
+            usersElement.insertBefore(toMove, this);
+        }
+
+        /***********************************************************
+        *   Message notification
+        ***********************************************************/
+        function notifyMessageAdded(userid, message)
+        {
+            if(Notification.permission === 'default') {
+                Notification.requestPermission().then(function(result) {
+                    console.log("Permission request: " + result);
+                });
+            } else if(Notification.permission === 'granted') {
+                if(document.hidden) {
+                    let user = {};
+                    for(let i = 0, ii = userList.length; i < ii; i++) {
+                        if(userList[i].i === userid) {
+                           user = userList[i];
+                        }
+                    }
+                    new Notification('✌ You have a new message from ' + user.n, {
+                        body: message,
+                        icon: "images/avatar_icon_" + user.a + ".svg"
+                    });
+                    console.log("there should be a notification");
+                }
+            } else {
+                console.log("Permission is not granted to show notifications");
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
